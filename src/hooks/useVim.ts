@@ -13,6 +13,7 @@ export function useVim() {
     (e: KeyboardEvent) => {
       const { mode, waitingForChar } = state;
 
+      // Handle Waiting for Char (f/F command)
       if (waitingForChar) {
         e.preventDefault();
         if (e.key.length === 1) {
@@ -22,10 +23,39 @@ export function useVim() {
         }
         return;
       }
+      
+      // Handle Replace Single Char Mode (r command)
+      if (mode === Mode.REPLACE) {
+          e.preventDefault();
+          if (e.key === 'Escape') {
+               dispatch({ type: 'EXIT_MODE' });
+          } else if (e.key.length === 1) {
+               dispatch({ type: 'TYPE_CHAR', char: e.key });
+          }
+          return;
+      }
+
+      // Handle Command Mode (Search)
+      if (mode === Mode.COMMAND) {
+          if (e.key === 'Enter') {
+              e.preventDefault();
+              dispatch({ type: 'SEARCH_EXEC' });
+          } else if (e.key === 'Escape') {
+              e.preventDefault();
+              dispatch({ type: 'EXIT_MODE' });
+          } else if (e.key === 'Backspace') {
+              e.preventDefault();
+              dispatch({ type: 'DELETE_CHAR' });
+          } else if (e.key.length === 1) {
+              e.preventDefault();
+              dispatch({ type: 'SEARCH_TYPE', char: e.key });
+          }
+          return;
+      }
 
       switch (mode) {
         case Mode.NORMAL:
-          handleNormalModeKey(e, dispatch);
+          handleNormalModeKey(e, dispatch, state); // Pass state for commandBuffer access
           break;
         case Mode.INSERT:
           handleInsertModeKey(e, dispatch);

@@ -19,9 +19,10 @@ function App() {
         mode={state.mode} 
         cursor={state.cursor} 
         waitingForChar={state.waitingForChar}
-        message={state.clipboard ? "Text yanked!" : undefined} // Simple feedback
+        message={state.clipboard ? "Text yanked/deleted!" : undefined}
+        commandBar={state.commandBar}
       />
-      </div>
+    </div>
   );
 }
 

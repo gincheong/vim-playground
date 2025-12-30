@@ -6,15 +6,22 @@ interface StatusBarProps {
   cursor: Position;
   waitingForChar: boolean;
   message?: string;
+  commandBar?: string | null;
 }
 
-export const StatusBar: React.FC<StatusBarProps> = ({ mode, cursor, waitingForChar, message }) => {
+export const StatusBar: React.FC<StatusBarProps> = ({ mode, cursor, waitingForChar, message, commandBar }) => {
   return (
     <div className="bg-[#007acc] text-white px-2 py-1 text-sm font-mono flex justify-between items-center w-full">
       <div className="flex gap-4">
-        <span className="font-bold uppercase">-- {mode} --</span>
-        {waitingForChar && <span className="animate-pulse">Waiting for character...</span>}
-        {message && <span>{message}</span>}
+        {commandBar !== null && commandBar !== undefined ? (
+             <span className="font-bold">{commandBar}<span className="animate-pulse">_</span></span>
+        ) : (
+            <>
+                <span className="font-bold uppercase">-- {mode} --</span>
+                {waitingForChar && <span className="animate-pulse">Waiting for character...</span>}
+                {message && <span>{message}</span>}
+            </>
+        )}
       </div>
       <div>
         Ln {cursor.line + 1}, Col {cursor.col + 1}
