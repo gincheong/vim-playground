@@ -1,43 +1,6 @@
 import { type VimState, Mode } from '../../../types';
 import { getLineLength } from '../../../utils/stringUtils';
-import { handleExitMode } from './mode'; // Cyclic dependency risk? Maybe extract common types or interfaces.
-// Actually handleExitMode logic is simple enough to duplicate or put in common if strict.
-// But for now, let's keep it here or import. 
-// Ideally editing relies on mode switching.
-// Let's defer implementation of handleExitMode import until mode.ts is created or put it here temporarily?
-// Better: Reducer orchestrates. Handlers return new state.
-// BUT handleNewLine calls handleExitMode internally for Visual Block Insert.
-// We should import it.
-
-// Forward declaration or move handleExitMode to a shared location if circular dependency occurs.
-// For this refactor, let's duplicate the logic or rely on the fact that they are just functions.
-// `handleExitMode` is needed for `handleNewLine` in block insert.
-
-// Let's define a local helper or import from a yet-to-be-created file. 
-// I will import from './mode' assuming it will be created.
-// To avoid runtime error during this step, I'll implement a local minimal exit helper or create mode.ts first?
-// No, I can write this file, but typescript might complain if mode.ts doesn't exist yet.
-// I'll assume the user will create mode.ts shortly.
-// Actually, I can just inline the exit logic for now to avoid circular deps.
-
-const exitModeHelper = (state: VimState): VimState => {
-  let newCol = state.cursor.col;
-  if (state.mode === Mode.INSERT || state.mode === Mode.VISUAL_BLOCK_INSERT) {
-    newCol = Math.max(0, state.cursor.col - 1);
-  }
-
-  return {
-    ...state,
-    mode: Mode.NORMAL,
-    cursor: { ...state.cursor, col: newCol },
-    visualStart: null,
-    visualBlock: null,
-    waitingForChar: false,
-    findDirection: null,
-    commandBar: null,
-    commandBuffer: '',
-  };
-};
+import { handleExitMode } from './mode';
 
 // 문자 입력 처리
 export const handleTypeChar = (state: VimState, char: string): VimState => {
@@ -137,7 +100,7 @@ export const handleDeleteChar = (state: VimState): VimState => {
 export const handleNewLine = (state: VimState): VimState => {
   if (state.mode === Mode.VISUAL_BLOCK_INSERT) {
     // Block Insert 모드에서 엔터는 모드 종료로 처리
-    return exitModeHelper(state);
+    return handleExitMode(state);
   }
 
   if (state.mode !== Mode.INSERT) return state;
@@ -239,7 +202,10 @@ export const handlePaste = (state: VimState): VimState => {
 };
 
 // 라인 단위 작업 (dd, yy, cc 등)
-export const handleLineOp = (state: VimState, op: 'delete' | 'yank' | 'change' | 'open_below' | 'open_above'): VimState => {
+export const handleLineOp = (
+  state: VimState,
+  op: 'delete' | 'yank' | 'change' | 'open_below' | 'open_above'
+): VimState => {
   const { line } = state.cursor;
   const lines = [...state.lines];
   let newCursor = { ...state.cursor };
@@ -289,4 +255,3 @@ export const handleCommandBuffer = (state: VimState, char: string): VimState => 
 export const handleClearBuffer = (state: VimState): VimState => {
   return { ...state, commandBuffer: '' };
 };
-

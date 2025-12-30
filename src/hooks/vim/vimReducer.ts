@@ -61,7 +61,7 @@ export function vimReducer(state: VimState, action: VimAction): VimState {
   } else {
     // 2. 일반 액션 처리 (Switch 문)
     switch (action.type) {
-      // Navigation
+      // 네비게이션
       case 'MOVE':
         nextState = handleMove(state, action.direction);
         break;
@@ -87,7 +87,7 @@ export function vimReducer(state: VimState, action: VimAction): VimState {
         nextState = handleFindChar(state, action.char);
         break;
 
-      // Mode Switching
+      // 모드 전환
       case 'ENTER_MODE':
         nextState = handleEnterMode(state, action.mode);
         break;
@@ -95,7 +95,7 @@ export function vimReducer(state: VimState, action: VimAction): VimState {
         nextState = handleExitMode(state);
         break;
 
-      // Editing
+      // 편집
       case 'TYPE_CHAR':
         nextState = handleTypeChar(state, action.char);
         break;
@@ -127,7 +127,7 @@ export function vimReducer(state: VimState, action: VimAction): VimState {
         nextState = handleClearBuffer(state);
         break;
 
-      // Visual Operations
+      // 비주얼 작업
       case 'VISUAL_DELETE':
         nextState = handleVisualDelete(state);
         break;
@@ -154,7 +154,7 @@ export function vimReducer(state: VimState, action: VimAction): VimState {
         nextState = handleVisualBlockInsert(state, action.side);
         break;
 
-      // Search
+      // 검색
       case 'SEARCH_START':
         nextState = { ...state, mode: Mode.COMMAND, commandBar: '/', searchQuery: action.query || '' };
         break;
@@ -177,7 +177,7 @@ export function vimReducer(state: VimState, action: VimAction): VimState {
         break;
       }
 
-      // History
+      // 히스토리
       case 'UNDO':
         return handleUndo(state);
       case 'REDO':

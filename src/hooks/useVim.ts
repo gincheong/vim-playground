@@ -13,7 +13,7 @@ export function useVim() {
     (e: KeyboardEvent) => {
       const { mode, waitingForChar } = state;
 
-      // Handle Waiting for Char (f/F command)
+      // 문자 대기 처리 (f/F 명령)
       if (waitingForChar) {
         e.preventDefault();
         if (e.key.length === 1) {
@@ -24,7 +24,7 @@ export function useVim() {
         return;
       }
       
-      // Handle Replace Single Char Mode (r command)
+      // 한 글자 교체 모드 (r 명령)
       if (mode === Mode.REPLACE) {
           e.preventDefault();
           if (e.key === 'Escape') {
@@ -35,7 +35,7 @@ export function useVim() {
           return;
       }
 
-      // Handle Command Mode (Search)
+      // 커맨드 모드 (검색)
       if (mode === Mode.COMMAND) {
           if (e.key === 'Enter') {
               e.preventDefault();
@@ -55,7 +55,7 @@ export function useVim() {
 
       switch (mode) {
         case Mode.NORMAL:
-          handleNormalModeKey(e, dispatch, state); // Pass state for commandBuffer access
+          handleNormalModeKey(e, dispatch, state); // commandBuffer 접근을 위해 state 전달
           break;
         case Mode.INSERT:
           handleInsertModeKey(e, dispatch);
@@ -63,11 +63,8 @@ export function useVim() {
         case Mode.VISUAL:
         case Mode.VISUAL_LINE:
         case Mode.VISUAL_BLOCK:
-        case Mode.VISUAL_BLOCK_INSERT: // Include this mode to handle typing via visual handler if needed? 
-          // Actually VISUAL_BLOCK_INSERT should be handled like INSERT usually, but logic is custom.
-          // In vimReducer, we handle TYPE_CHAR for VISUAL_BLOCK_INSERT.
-          // But who dispatches TYPE_CHAR? 
-          // handleInsertModeKey does.
+        case Mode.VISUAL_BLOCK_INSERT:
+          // VISUAL_BLOCK_INSERT 모드는 INSERT 모드처럼 키 입력을 처리 (리듀서에서 로직 분기)
           if (mode === Mode.VISUAL_BLOCK_INSERT) {
               handleInsertModeKey(e, dispatch);
           } else {

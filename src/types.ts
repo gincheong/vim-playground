@@ -4,7 +4,7 @@ export const Mode = {
   VISUAL: 'VISUAL',
   VISUAL_LINE: 'VISUAL_LINE',
   VISUAL_BLOCK: 'VISUAL_BLOCK',
-  VISUAL_BLOCK_INSERT: 'VISUAL_BLOCK_INSERT', // New: for multi-line block insert
+  VISUAL_BLOCK_INSERT: 'VISUAL_BLOCK_INSERT', // 멀티 커서 입력 (Block Insert)
   COMMAND: 'COMMAND',
   REPLACE: 'REPLACE',
 } as const;
@@ -23,24 +23,24 @@ export interface VimState {
   visualStart: Position | null;
   clipboard: string | null;
 
-  // Navigation & Search
+  // 네비게이션 및 검색
   waitingForChar: boolean;
   findDirection: 'forward' | 'backward' | null;
 
-  // Extended Features
+  // 확장 기능
   commandBuffer: string;
   searchQuery: string;
   searchMatchIndex: number | null;
   commandBar: string | null;
 
-  // Visual Block Insert context
+  // Visual Block Insert 상태
   visualBlock: {
     startLine: number;
     endLine: number;
-    col: number; // The column where insertion happens
+    col: number; // 입력이 일어나는 컬럼 위치
   } | null;
 
-  // History for Undo/Redo
+  // 실행 취소/다시 실행 기록
   history: {
     lines: string[];
     cursor: Position;
@@ -64,7 +64,7 @@ export type VimAction =
   | { type: 'PASTE' }
   | { type: 'SUBSTITUTE' }
   | { type: 'SCROLL'; direction: 'up' | 'down' }
-  | { type: 'JUMP_FILE'; target: 'start' | 'end'; line?: number } // Added line param for {count}G
+  | { type: 'JUMP_FILE'; target: 'start' | 'end'; line?: number } // 라인 지정 이동 ({count}G)
   | { type: 'MATCH_BRACKET' }
   | { type: 'LINE_OP'; op: 'delete' | 'yank' | 'change' | 'open_below' | 'open_above' }
   | { type: 'REPLACE_CHAR'; char: string }
@@ -77,9 +77,9 @@ export type VimAction =
   | { type: 'CLEAR_COMMAND_BUFFER' }
   | { type: 'UNDO' }
   | { type: 'REDO' }
-  // New Visual Actions
+  // 추가된 Visual 액션
   | { type: 'VISUAL_CASE'; caseType: 'toggle' | 'upper' | 'lower' }
   | { type: 'VISUAL_INDENT'; direction: 'in' | 'out' }
-  | { type: 'VISUAL_REPLACE'; char: string } // waiting for char then replace selection
+  | { type: 'VISUAL_REPLACE'; char: string } // 선택 영역 치환 (문자 입력 대기)
   | { type: 'VISUAL_JOIN' }
-  | { type: 'VISUAL_BLOCK_INSERT'; side: 'before' | 'after' }; // 'I' or 'A'
+  | { type: 'VISUAL_BLOCK_INSERT'; side: 'before' | 'after' }; // 'I' (before) 또는 'A' (after)

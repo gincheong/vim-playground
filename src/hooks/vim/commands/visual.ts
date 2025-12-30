@@ -39,48 +39,39 @@ export const handleVisualModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
       e.preventDefault();
       dispatch({ type: 'VISUAL_CASE', caseType: 'lower' });
       break;
-    case 'U': // Shift+u
+    case 'U': // 대문자 변환 (Shift+u)
       e.preventDefault();
       dispatch({ type: 'VISUAL_CASE', caseType: 'upper' });
       break;
-    case '>': // Shift+.
+    case '>': // 들여쓰기 (Shift+.)
       e.preventDefault();
       dispatch({ type: 'VISUAL_INDENT', direction: 'in' });
       break;
-    case '<': // Shift+,
+    case '<': // 내어쓰기 (Shift+,)
       e.preventDefault();
       dispatch({ type: 'VISUAL_INDENT', direction: 'out' });
       break;
-    case 'J': // Shift+j
+    case 'J': // 라인 합치기 (Shift+j)
       e.preventDefault();
       dispatch({ type: 'VISUAL_JOIN' });
       break;
     case 'r':
       e.preventDefault();
-      // Need to wait for next char. Reducer handles this if we dispatch without char or separate action?
-      // In Reducer: VISUAL_REPLACE w/o char -> waitingForChar=true
-      // But wait, our reducer handles generic WAIT_FOR_CHAR only for f/F?
-      // Let's use a specific action or pass empty char to signal wait.
+      // 다음 문자 대기 (리듀서에서 처리)
       dispatch({ type: 'VISUAL_REPLACE', char: '' });
       break;
-    case 'I': // Shift+i
+    case 'I': // 블록 삽입 (Shift+i)
       e.preventDefault();
-      // Block insert logic works for Visual Block.
-      // For Visual Line, usually 'I' inserts at start of every line?
-      // Standard Vim: 'I' in Visual Line mode inserts at start of *first* line only? No, it enters Insert mode.
-      // But typically Visual Block 'I' does multi-line.
-      // If we want multi-line insert for Visual Line, we can treat it as Block Insert covering full lines?
-      // Or just switch to Block Insert mode with col=0?
       dispatch({ type: 'VISUAL_BLOCK_INSERT', side: 'before' });
       break;
-    case 'A': // Shift+a
+    case 'A': // 블록 추가 (Shift+a)
       e.preventDefault();
       dispatch({ type: 'VISUAL_BLOCK_INSERT', side: 'after' });
       break;
     case 's':
     case 'c':
       e.preventDefault();
-      // Change selection: Delete + Insert
+      // 선택 영역 변경: 삭제 후 Insert 모드 진입
       dispatch({ type: 'VISUAL_DELETE' });
       dispatch({ type: 'ENTER_MODE', mode: Mode.INSERT });
       break;

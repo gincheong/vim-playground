@@ -3,7 +3,7 @@ import { type VimAction, Mode, type VimState } from '../../../types';
 export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<VimAction>, state: VimState) => {
   const { commandBuffer } = state;
 
-  // Handle Undo/Redo
+  // Undo/Redo 처리
   if (e.key === 'u' && !e.ctrlKey) {
     e.preventDefault();
     dispatch({ type: 'UNDO' });
@@ -15,34 +15,27 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
     return;
   }
 
-  // Handle Multi-key sequences (including numbers)
-  // We need to support {count}gg and {count}G
-  // If e.key is a number, we should add it to buffer?
-  // Current buffer logic is 'g', 'd', 'y', 'c'.
-  // If we type '1', '2', 'g', 'g' -> 12gg
-
+  // 숫자 입력 처리 ({count}gg, {count}G 지원)
   if (/^[0-9]$/.test(e.key)) {
     e.preventDefault();
     dispatch({ type: 'ADD_TO_COMMAND_BUFFER', char: e.key });
     return;
   }
 
-  // Handle Multi-key sequences
+  // 멀티 키 시퀀스 처리
   if (commandBuffer) {
     const countMatch = commandBuffer.match(/^(\d+)/);
     const count = countMatch ? parseInt(countMatch[1], 10) : null;
-    // cmdPrefix is what remains after numbers. e.g. "12g" -> "g", "12" -> ""
+    // cmdPrefix는 숫자 이후의 문자열 (예: "12g" -> "g", "12" -> "")
     const cmdPrefix = countMatch ? commandBuffer.slice(countMatch[1].length) : commandBuffer;
 
-    // 1. {count}G -> Jump to line {count}
+    // 1. {count}G -> 해당 라인으로 이동
     if (count !== null && cmdPrefix === '' && e.key === 'G') {
       dispatch({ type: 'JUMP_FILE', target: 'start', line: count });
       return;
     }
 
-    // 2. {count}gg -> Jump to line {count} (or 1 if no count)
-    // If buffer is "12g" and key is "g" -> Jump to 12
-    // If buffer is "g" and key is "g" -> Jump to start
+    // 2. {count}gg -> 해당 라인으로 이동 (count 없으면 파일 시작으로)
     if (cmdPrefix === 'g' && e.key === 'g') {
       if (count !== null) {
         dispatch({ type: 'JUMP_FILE', target: 'start', line: count });
@@ -52,9 +45,9 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
       return;
     }
 
-    // 3. Line Operations (dd, yy, cc)
+    // 3. 라인 단위 작업 (dd, yy, cc)
     if (cmdPrefix === 'd' && e.key === 'd') {
-      dispatch({ type: 'LINE_OP', op: 'delete' }); // {count}dd support can be added here
+      dispatch({ type: 'LINE_OP', op: 'delete' });
       return;
     }
     if (cmdPrefix === 'y' && e.key === 'y') {
@@ -66,38 +59,26 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
       return;
     }
 
-    // 4. Continue sequence (add to buffer)
-    // Valid continuations:
-    // - Number + g/d/y/c (e.g. "12" + "g" -> "12g")
-    // - Empty + g/d/y/c (handled by single key logic if buffer was empty, but here buffer has something)
-    //   (e.g. buffer="1", key="g" -> "1g")
+    // 4. 시퀀스 계속 입력 (버퍼에 추가)
     if (e.key === 'g' || e.key === 'd' || e.key === 'y' || e.key === 'c') {
       e.preventDefault();
       dispatch({ type: 'ADD_TO_COMMAND_BUFFER', char: e.key });
       return;
     }
 
-    // 5. Invalid sequence -> Clear buffer
+    // 5. 유효하지 않은 시퀀스 -> 버퍼 초기화
     dispatch({ type: 'CLEAR_COMMAND_BUFFER' });
-    // Fall through?
-    // If I typed "12" then "x" (delete char), "x" should execute with count?
-    // Standard Vim: "12x" deletes 12 chars.
-    // Currently we don't support count for other commands.
-    // If we clear buffer, we lose the count.
-    // For now, let's just clear.
     return;
   }
 
-  // Single keys that initiate multi-key commands
+  // 멀티 키 커맨드 시작 (단일 키 입력)
   if (!e.ctrlKey && (e.key === 'g' || e.key === 'd' || e.key === 'y' || e.key === 'c')) {
     e.preventDefault();
     dispatch({ type: 'ADD_TO_COMMAND_BUFFER', char: e.key });
     return;
   }
 
-  // {count}G where count is NOT in buffer?
-  // No, count must be in buffer.
-  // If I type 'G' without buffer, it goes to end.
+  // {count} 없이 G만 입력된 경우 (파일 끝으로 이동)
   if (e.key === 'G') {
     dispatch({ type: 'JUMP_FILE', target: 'end' });
     return;
@@ -119,10 +100,10 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
     case '_':
       dispatch({ type: 'MOVE_LINE_BOUNDARY', boundary: e.key });
       break;
-    case '%': // Shift+5
+    case '%': // 괄호 짝 찾기 (Shift+5)
       dispatch({ type: 'MATCH_BRACKET' });
       break;
-    case 'J': // Shift+j
+    case 'J': // 라인 합치기 (Shift+j)
       e.preventDefault();
       dispatch({ type: 'JOIN_LINES' });
       break;
@@ -132,10 +113,7 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
         dispatch({ type: 'SCROLL', direction: 'up' });
       }
       break;
-    case 'd': // Handle 'dd' via buffer above, but Ctrl+d here?
-      // Issue: 'd' is caught by "Single keys that initiate multi-key commands" block (line 34).
-      // We need to check for ctrlKey BEFORE adding to buffer.
-      // The buffer logic at line 34 doesn't check modifiers.
+    case 'd': // Ctrl+d 스크롤 (단독 d는 위에서 처리됨)
       if (e.ctrlKey) {
         e.preventDefault();
         dispatch({ type: 'SCROLL', direction: 'down' });
@@ -155,7 +133,7 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
       e.preventDefault();
       dispatch({ type: 'LINE_OP', op: 'open_below' });
       break;
-    case 'O': // Shift+o
+    case 'O': // 위쪽으로 라인 열기 (Shift+o)
       e.preventDefault();
       dispatch({ type: 'LINE_OP', op: 'open_above' });
       break;
@@ -171,7 +149,7 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
         dispatch({ type: 'ENTER_MODE', mode: Mode.VISUAL });
       }
       break;
-    case 'V': // Shift+v
+    case 'V': // 라인 비주얼 모드 (Shift+v)
       e.preventDefault();
       dispatch({ type: 'ENTER_MODE', mode: Mode.VISUAL_LINE });
       break;

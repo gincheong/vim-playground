@@ -12,16 +12,16 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
   const [yankFlash, setYankFlash] = useState<{ line: number; col?: number } | null>(null);
 
   useEffect(() => {
-    // Focus editor on mount
+    // 마운트 시 에디터 포커스
     editorRef.current?.focus();
   }, []);
 
-  // Auto-scroll logic could go here
+  // 자동 스크롤 로직이 여기 들어갈 수 있음
   useEffect(() => {
-    // scrollIntoView logic
+    // scrollIntoView 로직 구현 예정
   }, [cursor]);
 
-  // Flash effect on Yank
+  // Yank(복사) 시 플래시 효과
   useEffect(() => {
     if (clipboard) {
       // 렌더 사이클 도중에 동기적으로 setState를 호출하면 경고가 발생하므로,
@@ -52,7 +52,7 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
       return col >= minCol && col <= maxCol;
     }
 
-    // Normal Visual
+    // 일반 비주얼 모드
     if (line < start.line || line > end.line) return false;
     if (line === start.line && line === end.line) {
       return col >= start.col && col <= end.col;
@@ -70,7 +70,7 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
     >
       <div className="relative">
         {lines.map((lineContent, lineIndex) => {
-          const isFlash = yankFlash && yankFlash.line === lineIndex; // Simple line flash
+          const isFlash = yankFlash && yankFlash.line === lineIndex; // 라인 전체 플래시
 
           return (
             <div
@@ -79,10 +79,10 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
                 isFlash ? 'bg-white/20 transition-colors duration-200' : ''
               }`}
             >
-              {/* Line Number */}
+              {/* 줄 번호 */}
               <div className="w-12 text-right mr-4 text-[#858585] select-none">{lineIndex + 1}</div>
 
-              {/* Line Content */}
+              {/* 줄 내용 */}
               <div className="flex-1 relative">
                 {lineContent.length === 0 ? (
                   <span
@@ -101,7 +101,7 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
                     const isCursor = cursor.line === lineIndex && cursor.col === colIndex;
                     const selected = isSelected(lineIndex, colIndex);
 
-                    let className = 'inline-block'; // Make span inline-block to accept width/height/transform if needed
+                    let className = 'inline-block'; // width/height/transform 등을 적용하기 위해 inline-block 사용
 
                     if (selected) {
                       className += ' bg-[#264f78]';
