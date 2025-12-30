@@ -63,7 +63,16 @@ export function useVim() {
         case Mode.VISUAL:
         case Mode.VISUAL_LINE:
         case Mode.VISUAL_BLOCK:
-          handleVisualModeKey(e, dispatch);
+        case Mode.VISUAL_BLOCK_INSERT: // Include this mode to handle typing via visual handler if needed? 
+          // Actually VISUAL_BLOCK_INSERT should be handled like INSERT usually, but logic is custom.
+          // In vimReducer, we handle TYPE_CHAR for VISUAL_BLOCK_INSERT.
+          // But who dispatches TYPE_CHAR? 
+          // handleInsertModeKey does.
+          if (mode === Mode.VISUAL_BLOCK_INSERT) {
+              handleInsertModeKey(e, dispatch);
+          } else {
+              handleVisualModeKey(e, dispatch);
+          }
           break;
       }
     },

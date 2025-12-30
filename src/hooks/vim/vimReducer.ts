@@ -554,12 +554,46 @@ const handleVisualReplace = (state: VimState, char: string): VimState => {
 };
 
 const handleVisualBlockInsert = (state: VimState, side: 'before' | 'after'): VimState => {
+  // If in Visual Line mode, we can treat it as Block Insert by setting visualBlock col=0.
+  // Standard Vim: 'Shift+I' in Visual Line inserts at start of line (like '^' then 'i').
+  // 'Shift+A' appends to end of line.
+  // But here we are reusing the multi-cursor logic.
+  // Let's adapt:
+  
+  if (state.mode === Mode.VISUAL_LINE && state.visualStart) {
+      if (side === 'before') {
+          // Insert at col 0 for all lines? Or first non-blank?
+          // Let's do col 0 for simplicity or reuse existing logic.
+          return {
+              ...state,
+              mode: Mode.VISUAL_BLOCK_INSERT,
+              visualBlock: {
+                  startLine: Math.min(state.visualStart.line, state.cursor.line),
+                  endLine: Math.max(state.visualStart.line, state.cursor.line),
+                  col: 0,
+              },
+              cursor: { ...state.cursor, col: 0 },
+          };
+      } else {
+          // 'A' in Visual Line usually appends to end of EACH line.
+          // Our current block insert logic uses a FIXED col.
+          // To support variable end-of-line append, we need a special flag or logic in handleTypeChar.
+          // For now, let's just ignore 'A' in Visual Line or treat as end of longest line?
+          // Standard Vim 'A' in Visual Line appends to end of line.
+          // Let's skip 'A' for Visual Line in this simplified implementation or switch to Normal Append.
+          // Fallback: Just enter Insert mode at end of current line (standard behavior is actually multi-line append).
+          // Let's implement 'before' only for now or map to standard Insert.
+          return {
+              ...state,
+              mode: Mode.INSERT, // Fallback to single line insert for A
+              cursor: { ...state.cursor, col: state.lines[state.cursor.line].length },
+          };
+      }
+  }
+
   if (state.mode !== Mode.VISUAL_BLOCK || !state.visualStart) return state;
 
-  // Determine the column to insert at
-  // If 'I', insert at min(visualStart.col, cursor.col)
-  // If 'A', insert at max(visualStart.col, cursor.col) + 1 (append)
-
+  // ... existing block logic ...
   const minCol = Math.min(state.visualStart.col, state.cursor.col);
   const maxCol = Math.max(state.visualStart.col, state.cursor.col);
 

@@ -31,7 +31,7 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
   }
 
   // Single keys that initiate multi-key commands
-  if (e.key === 'g' || e.key === 'd' || e.key === 'y' || e.key === 'c') {
+  if (!e.ctrlKey && (e.key === 'g' || e.key === 'd' || e.key === 'y' || e.key === 'c')) {
       e.preventDefault();
       dispatch({ type: 'ADD_TO_COMMAND_BUFFER', char: e.key });
       return;
@@ -75,10 +75,14 @@ export const handleNormalModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
            dispatch({ type: 'SCROLL', direction: 'up' });
        }
        break;
-    case 'd':
+    case 'd': // Handle 'dd' via buffer above, but Ctrl+d here?
+       // Issue: 'd' is caught by "Single keys that initiate multi-key commands" block (line 34).
+       // We need to check for ctrlKey BEFORE adding to buffer.
+       // The buffer logic at line 34 doesn't check modifiers.
        if (e.ctrlKey) {
            e.preventDefault();
            dispatch({ type: 'SCROLL', direction: 'down' });
+           return;
        }
        break;
     case 'i':

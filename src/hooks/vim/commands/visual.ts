@@ -65,6 +65,12 @@ export const handleVisualModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
       break;
     case 'I': // Shift+i
       e.preventDefault();
+      // Block insert logic works for Visual Block.
+      // For Visual Line, usually 'I' inserts at start of every line?
+      // Standard Vim: 'I' in Visual Line mode inserts at start of *first* line only? No, it enters Insert mode.
+      // But typically Visual Block 'I' does multi-line.
+      // If we want multi-line insert for Visual Line, we can treat it as Block Insert covering full lines?
+      // Or just switch to Block Insert mode with col=0?
       dispatch({ type: 'VISUAL_BLOCK_INSERT', side: 'before' });
       break;
     case 'A': // Shift+a
