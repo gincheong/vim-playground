@@ -4,8 +4,9 @@ export const Mode = {
   VISUAL: 'VISUAL',
   VISUAL_LINE: 'VISUAL_LINE',
   VISUAL_BLOCK: 'VISUAL_BLOCK',
-  COMMAND: 'COMMAND', // New: For '/' search or ':' commands
-  REPLACE: 'REPLACE', // New: For 'r' command
+  VISUAL_BLOCK_INSERT: 'VISUAL_BLOCK_INSERT', // New: for multi-line block insert
+  COMMAND: 'COMMAND',
+  REPLACE: 'REPLACE',
 } as const;
 
 export type Mode = (typeof Mode)[keyof typeof Mode];
@@ -23,14 +24,21 @@ export interface VimState {
   clipboard: string | null;
 
   // Navigation & Search
-  waitingForChar: boolean; // For 'f', 'F' command
-  findDirection: 'forward' | 'backward' | null; // For 'f' vs 'F'
+  waitingForChar: boolean;
+  findDirection: 'forward' | 'backward' | null;
 
   // Extended Features
-  commandBuffer: string; // Stores partial commands like 'g', 'd', 'y', 'c'
-  searchQuery: string; // Current search query
-  searchMatchIndex: number | null; // Current index in match results (conceptually)
-  commandBar: string | null; // Text being typed in command bar (e.g. "/query")
+  commandBuffer: string;
+  searchQuery: string;
+  searchMatchIndex: number | null;
+  commandBar: string | null;
+
+  // Visual Block Insert context
+  visualBlock: {
+    startLine: number;
+    endLine: number;
+    col: number; // The column where insertion happens
+  } | null;
 }
 
 export type VimAction =
@@ -48,16 +56,21 @@ export type VimAction =
   | { type: 'VISUAL_YANK' }
   | { type: 'PASTE' }
   | { type: 'SUBSTITUTE' }
-  // New Actions
-  | { type: 'SCROLL'; direction: 'up' | 'down' } // Ctrl+u, Ctrl+d
-  | { type: 'JUMP_FILE'; target: 'start' | 'end' } // gg, G
-  | { type: 'MATCH_BRACKET' } // %
-  | { type: 'LINE_OP'; op: 'delete' | 'yank' | 'change' | 'open_below' | 'open_above' } // dd, yy, cc, o, O
-  | { type: 'REPLACE_CHAR'; char: string } // r + char
-  | { type: 'JOIN_LINES' } // J
-  | { type: 'SEARCH_START'; query?: string } // / or *
-  | { type: 'SEARCH_TYPE'; char: string } // Typing in search bar
-  | { type: 'SEARCH_EXEC' } // Enter in search bar
-  | { type: 'SEARCH_NEXT'; direction: 'next' | 'prev' } // n, N
-  | { type: 'ADD_TO_COMMAND_BUFFER'; char: string } // For handling multi-key sequences
-  | { type: 'CLEAR_COMMAND_BUFFER' };
+  | { type: 'SCROLL'; direction: 'up' | 'down' }
+  | { type: 'JUMP_FILE'; target: 'start' | 'end' }
+  | { type: 'MATCH_BRACKET' }
+  | { type: 'LINE_OP'; op: 'delete' | 'yank' | 'change' | 'open_below' | 'open_above' }
+  | { type: 'REPLACE_CHAR'; char: string }
+  | { type: 'JOIN_LINES' }
+  | { type: 'SEARCH_START'; query?: string }
+  | { type: 'SEARCH_TYPE'; char: string }
+  | { type: 'SEARCH_EXEC' }
+  | { type: 'SEARCH_NEXT'; direction: 'next' | 'prev' }
+  | { type: 'ADD_TO_COMMAND_BUFFER'; char: string }
+  | { type: 'CLEAR_COMMAND_BUFFER' }
+  // New Visual Actions
+  | { type: 'VISUAL_CASE'; caseType: 'toggle' | 'upper' | 'lower' }
+  | { type: 'VISUAL_INDENT'; direction: 'in' | 'out' }
+  | { type: 'VISUAL_REPLACE'; char: string } // waiting for char then replace selection
+  | { type: 'VISUAL_JOIN' }
+  | { type: 'VISUAL_BLOCK_INSERT'; side: 'before' | 'after' }; // 'I' or 'A'

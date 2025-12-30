@@ -1,11 +1,10 @@
-import { type VimAction } from '../../../types';
+import { type VimAction, Mode } from '../../../types';
 
 export const handleVisualModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<VimAction>) => {
   switch (e.key) {
     case 'Escape':
     case 'v':
       e.preventDefault();
-      // v in Visual Mode returns to Normal (toggle)
       dispatch({ type: 'EXIT_MODE' });
       break;
     case 'h':
@@ -17,12 +16,13 @@ export const handleVisualModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
     case 'w':
     case 'b':
     case 'e':
-        dispatch({ type: 'MOVE_WORD', direction: e.key });
-        break;
+      dispatch({ type: 'MOVE_WORD', direction: e.key });
+      break;
     case '$':
     case '_':
-        dispatch({ type: 'MOVE_LINE_BOUNDARY', boundary: e.key });
-        break;
+      dispatch({ type: 'MOVE_LINE_BOUNDARY', boundary: e.key });
+      break;
+    case 'x':
     case 'd':
       e.preventDefault();
       dispatch({ type: 'VISUAL_DELETE' });
@@ -30,6 +30,53 @@ export const handleVisualModeKey = (e: KeyboardEvent, dispatch: React.Dispatch<V
     case 'y':
       e.preventDefault();
       dispatch({ type: 'VISUAL_YANK' });
+      break;
+    case '~':
+      e.preventDefault();
+      dispatch({ type: 'VISUAL_CASE', caseType: 'toggle' });
+      break;
+    case 'u':
+      e.preventDefault();
+      dispatch({ type: 'VISUAL_CASE', caseType: 'lower' });
+      break;
+    case 'U': // Shift+u
+      e.preventDefault();
+      dispatch({ type: 'VISUAL_CASE', caseType: 'upper' });
+      break;
+    case '>': // Shift+.
+      e.preventDefault();
+      dispatch({ type: 'VISUAL_INDENT', direction: 'in' });
+      break;
+    case '<': // Shift+,
+      e.preventDefault();
+      dispatch({ type: 'VISUAL_INDENT', direction: 'out' });
+      break;
+    case 'J': // Shift+j
+      e.preventDefault();
+      dispatch({ type: 'VISUAL_JOIN' });
+      break;
+    case 'r':
+      e.preventDefault();
+      // Need to wait for next char. Reducer handles this if we dispatch without char or separate action?
+      // In Reducer: VISUAL_REPLACE w/o char -> waitingForChar=true
+      // But wait, our reducer handles generic WAIT_FOR_CHAR only for f/F?
+      // Let's use a specific action or pass empty char to signal wait.
+      dispatch({ type: 'VISUAL_REPLACE', char: '' });
+      break;
+    case 'I': // Shift+i
+      e.preventDefault();
+      dispatch({ type: 'VISUAL_BLOCK_INSERT', side: 'before' });
+      break;
+    case 'A': // Shift+a
+      e.preventDefault();
+      dispatch({ type: 'VISUAL_BLOCK_INSERT', side: 'after' });
+      break;
+    case 's':
+    case 'c':
+      e.preventDefault();
+      // Change selection: Delete + Insert
+      dispatch({ type: 'VISUAL_DELETE' });
+      dispatch({ type: 'ENTER_MODE', mode: Mode.INSERT });
       break;
   }
 };
