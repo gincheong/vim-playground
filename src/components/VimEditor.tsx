@@ -11,6 +11,11 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [yankFlash, setYankFlash] = useState<{ line: number; col?: number } | null>(null);
 
+  useEffect(() => {
+    // Focus editor on mount
+    editorRef.current?.focus();
+  }, []);
+
   // Auto-scroll logic could go here
   useEffect(() => {
     // scrollIntoView logic

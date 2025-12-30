@@ -1,25 +1,42 @@
 You are an intelligent coding assistant helping to maintain a Vim practice application.
 
 # Project Overview
+
 - **Stack:** React, TypeScript, Vite, Tailwind CSS.
-- **Goal:** Emulate specific Vim functionalities (Navigation, Insert, Visual, Find) for educational purposes.
+- **Goal:** Emulate specific Vim functionalities (Navigation, Insert, Visual, Find) for educational purposes with IDE-like UI/UX.
+
+# Architecture & State Management
+
+- **State:** Centralized in `src/hooks/useVim.ts` using `useReducer`.
+- **Reducer Logic:** Logic is split by domain in `src/hooks/vim/handlers/` (navigation, editing, visual, search, history, common, mode).
+- **Key Commands:** Key event handling is separated by mode in `src/hooks/vim/commands/` (normal, insert, visual).
+- **Types:** All shared types are in `src/types.ts`.
 
 # Coding Guidelines
-- **State Management:** Logic resides in `src/hooks/useVim.ts` using `useReducer`. Avoid adding local state to components for editor logic.
-- **Styling:** Use Tailwind CSS. Dark mode theme (#1e1e1e background).
-- **Types:** All shared types are in `src/types.ts`.
-- **TypeScript:** Use `import type { ... }` when importing types to avoid compilation errors and ensure proper type erasure.
-- **Logic:**
-  - `Normal Mode`: Cursor is block, constraints within line length.
-  - `Insert Mode`: Cursor is bar, can go past last character.
-  - `Visual Mode`: Selection logic is start/end range inclusive.
 
-# Key Mappings
-- `h,j,k,l`: Navigation
-- `i, a, s`: Insert transitions
-- `v`: Visual transition
-- `d, y, p`: Visual actions & Paste
-- `f`: Find character on line
+- **TypeScript:** Use `import type { ... }` when importing types to avoid compilation errors and ensure proper type erasure.
+- **Styling:** Use Tailwind CSS. Dark mode theme (#1e1e1e background).
+- **Comments:** **MUST BE KOREAN**. (코드베이스 내의 모든 주석은 반드시 한국어로 작성한다.)
+- **No Local State:** Avoid adding local state to components for editor logic; use the central Vim state.
+
+# Vim Logic Rules
+
+- **Normal Mode:** Cursor is a block. Constraints: `0 <= col <= lineLength - 1` (unless empty line).
+- **Insert Mode:** Cursor is a bar (`absolute` positioned). Constraints: `0 <= col <= lineLength`.
+- **Visual Mode:** Selection logic is start/end range inclusive.
+- **Visual Block:** Multi-cursor editing logic handled in `handlers/visual.ts` and `handlers/editing.ts`.
+- **History:** Undo/Redo stack implemented in `handlers/history.ts`.
+
+# Implemented Features & Key Mappings
+
+- **Navigation:** `h,j,k,l`, `w,b,e`, `$,_`, `gg,G` (supports {count}), `Ctrl+u/d` (scroll).
+- **Search:** `f/F` (char search), `/` (global search), `n/N` (next/prev match).
+- **Editing:** `i, a, s` (insert transitions), `o, O` (open line), `dd, yy, cc` (line ops), `p` (paste), `r` (replace char), `J` (join).
+- **Visual:** `v` (char), `V` (line), `Ctrl+v` (block). Actions: `d, y, c, s, r, J, ~, u, U, <, >`.
+- **Visual Block Insert:** `Shift+I` (insert before), `Shift+A` (append after).
+- **History:** `u` (Undo), `Ctrl+r` (Redo).
 
 # Testing
+
 - When modifying logic, ensure boundary conditions (start/end of line/file) are handled.
+- Verify Undo/Redo state consistency after complex operations.

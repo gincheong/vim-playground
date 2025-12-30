@@ -39,6 +39,13 @@ export interface VimState {
     endLine: number;
     col: number; // The column where insertion happens
   } | null;
+
+  // History for Undo/Redo
+  history: {
+    lines: string[];
+    cursor: Position;
+  }[];
+  historyIndex: number;
 }
 
 export type VimAction =
@@ -57,7 +64,7 @@ export type VimAction =
   | { type: 'PASTE' }
   | { type: 'SUBSTITUTE' }
   | { type: 'SCROLL'; direction: 'up' | 'down' }
-  | { type: 'JUMP_FILE'; target: 'start' | 'end' }
+  | { type: 'JUMP_FILE'; target: 'start' | 'end'; line?: number } // Added line param for {count}G
   | { type: 'MATCH_BRACKET' }
   | { type: 'LINE_OP'; op: 'delete' | 'yank' | 'change' | 'open_below' | 'open_above' }
   | { type: 'REPLACE_CHAR'; char: string }
@@ -68,6 +75,8 @@ export type VimAction =
   | { type: 'SEARCH_NEXT'; direction: 'next' | 'prev' }
   | { type: 'ADD_TO_COMMAND_BUFFER'; char: string }
   | { type: 'CLEAR_COMMAND_BUFFER' }
+  | { type: 'UNDO' }
+  | { type: 'REDO' }
   // New Visual Actions
   | { type: 'VISUAL_CASE'; caseType: 'toggle' | 'upper' | 'lower' }
   | { type: 'VISUAL_INDENT'; direction: 'in' | 'out' }

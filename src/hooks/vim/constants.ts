@@ -7,6 +7,7 @@ export const INITIAL_LINES = [
   '  h,j,k,l : Basic movement',
   '  w,b,e   : Word movement',
   '  gg, G   : Top / Bottom of file',
+  '  {N}gg/G : Jump to line N',
   '  Ctrl+u/d: Half page up/down',
   '  %       : Match bracket () {} []',
   '  $, _    : End/Start of line',
@@ -20,6 +21,7 @@ export const INITIAL_LINES = [
   '  r+char  : Replace character',
   '  J       : Join lines',
   '  p       : Paste',
+  '  u, ^r   : Undo / Redo',
   '',
   '[Visual & Search]',
   '  v, V, ^v: Visual char/line/block',
@@ -49,4 +51,6 @@ export const INITIAL_STATE: VimState = {
   searchMatchIndex: null,
   commandBar: null,
   visualBlock: null,
+  history: [],
+  historyIndex: -1,
 };
