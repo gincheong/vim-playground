@@ -1,0 +1,25 @@
+You are an intelligent coding assistant helping to maintain a Vim practice application.
+
+# Project Overview
+- **Stack:** React, TypeScript, Vite, Tailwind CSS.
+- **Goal:** Emulate specific Vim functionalities (Navigation, Insert, Visual, Find) for educational purposes.
+
+# Coding Guidelines
+- **State Management:** Logic resides in `src/hooks/useVim.ts` using `useReducer`. Avoid adding local state to components for editor logic.
+- **Styling:** Use Tailwind CSS. Dark mode theme (#1e1e1e background).
+- **Types:** All shared types are in `src/types.ts`.
+- **TypeScript:** Use `import type { ... }` when importing types to avoid compilation errors and ensure proper type erasure.
+- **Logic:**
+  - `Normal Mode`: Cursor is block, constraints within line length.
+  - `Insert Mode`: Cursor is bar, can go past last character.
+  - `Visual Mode`: Selection logic is start/end range inclusive.
+
+# Key Mappings
+- `h,j,k,l`: Navigation
+- `i, a, s`: Insert transitions
+- `v`: Visual transition
+- `d, y, p`: Visual actions & Paste
+- `f`: Find character on line
+
+# Testing
+- When modifying logic, ensure boundary conditions (start/end of line/file) are handled.
