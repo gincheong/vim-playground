@@ -16,10 +16,33 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
     editorRef.current?.focus();
   }, []);
 
-  // 자동 스크롤 로직이 여기 들어갈 수 있음
+  // 커서 위치에 따른 자동 스크롤 (Vim의 scrolloff 기능 모방)
   useEffect(() => {
-    // scrollIntoView 로직 구현 예정
-  }, [cursor]);
+    const container = editorRef.current;
+    if (!container) return;
+
+    // 현재 커서가 있는 라인 요소를 찾습니다.
+    const lineNode = container.querySelector(`[data-line="${cursor.line}"]`) as HTMLElement;
+    if (!lineNode) return;
+
+    const containerHeight = container.clientHeight;
+    const lineHeight = lineNode.offsetHeight;
+    const lineTop = lineNode.offsetTop;
+    const scrollTop = container.scrollTop;
+    
+    // 화면 상하단에 여유 공간(scrolloff)을 둡니다.
+    const SCROLL_MARGIN = 3; 
+    const offset = SCROLL_MARGIN * lineHeight;
+
+    // 1. 커서가 뷰포트 상단보다 위에 있거나, 상단 여유 공간 내에 진입한 경우 (위로 스크롤)
+    if (lineTop < scrollTop + offset) {
+      container.scrollTop = Math.max(0, lineTop - offset);
+    }
+    // 2. 커서가 뷰포트 하단보다 아래에 있거나, 하단 여유 공간 내에 진입한 경우 (아래로 스크롤)
+    else if (lineTop + lineHeight > scrollTop + containerHeight - offset) {
+      container.scrollTop = lineTop + lineHeight - containerHeight + offset;
+    }
+  }, [cursor.line]);
 
   // Yank(복사) 시 플래시 효과
   useEffect(() => {
@@ -64,7 +87,7 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
 
   return (
     <div
-      className="bg-[#1e1e1e] text-[#d4d4d4] font-mono text-lg p-4 h-full overflow-auto outline-none"
+      className="bg-[#1e1e1e] text-[#d4d4d4] font-mono text-lg p-4 h-full overflow-auto outline-none scrollbar-hide"
       ref={editorRef}
       tabIndex={0}
     >
@@ -75,6 +98,7 @@ export const VimEditor: React.FC<VimEditorProps> = ({ vimState }) => {
           return (
             <div
               key={lineIndex}
+              data-line={lineIndex}
               className={`flex relative leading-relaxed whitespace-pre ${
                 isFlash ? 'bg-white/20 transition-colors duration-200' : ''
               }`}
